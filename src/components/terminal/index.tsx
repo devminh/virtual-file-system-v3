@@ -1,6 +1,7 @@
 import { Input } from "@moai/core";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { API_URL_FILE_STORAGE } from "../../constants/endpoint";
 import { PathAddress } from "../folder-details/interface";
 import { TerminalPageProps } from "./interface";
 import { checkValidFolderPath } from "./utils";
@@ -36,9 +37,7 @@ const Terminal = ({ rootFolder }: TerminalPageProps): JSX.Element => {
       }
 
       axios
-        .get(
-          `http://localhost:5000/api/file-storage/?parent_id=${currentParent.id}`
-        )
+        .get(`${API_URL_FILE_STORAGE}/?parent_id=${currentParent.id}`)
         .then((res) => {
           if (res.data) {
             setChildItems(res.data);
@@ -51,11 +50,11 @@ const Terminal = ({ rootFolder }: TerminalPageProps): JSX.Element => {
     const commandParams = val.replace(/\s+/g, " ").split(" ");
     switch (commandParams[0]) {
       case "ls":
-        const header = ["name", "created_at"].join(" | ");
+        // const header = ["name", "created_at"].join(" | ");
         const content = childItems
-          .map((rows: any): string => [rows.name, rows.created_at].join(" | "))
-          .join("\n");
-        setCommands([...command, `${header}\n${content}`]);
+          .map((rows: any): string => [rows.name].join(""))
+          .join(" | ");
+        setCommands([...command, `${content}`]);
         break;
       case "cd":
         //path folder, find each folder if they exist name,parentId === previousOne
@@ -81,25 +80,25 @@ const Terminal = ({ rootFolder }: TerminalPageProps): JSX.Element => {
             break;
 
           default:
-            // const childFolder = childItems.find(
-            //   (item) => item.name === commandParams[1] && item.type === "folder"
-            // );
-
-            const childFolder = checkValidFolderPath(
-              currentParent.id,
-              commandParams[1]
+            const childFolder = childItems.find(
+              (item) => item.name === commandParams[1] && item.type === "folder"
             );
+
+            // const childFolder2 = checkValidFolderPath(
+            //   currentParent.id,
+            //   commandParams[1]
+            // );
 
             // console.log("childFolder", childFolder);
 
-            // if (childFolder) {
-            //   setCurrentParent({ id: childFolder._id, name: childFolder.name });
-            // } else {
-            //   setCommands([
-            //     ...command,
-            //     `Not found  ${commandParams[1]} folder`,
-            //   ]);
-            // }
+            if (childFolder) {
+              setCurrentParent({ id: childFolder.id, name: childFolder.name });
+            } else {
+              setCommands([
+                ...command,
+                `Not found  ${commandParams[1]} folder`,
+              ]);
+            }
             break;
         }
         break;
@@ -123,8 +122,8 @@ const Terminal = ({ rootFolder }: TerminalPageProps): JSX.Element => {
   };
 
   return (
-    <div className="p-2 border-t border-gray-300 border-gray">
-      Terminal
+    <div className="p-4 border-t border-gray-300 border-gray">
+      <div className="text-xl"> Terminal</div>
       {command.length
         ? command.map((item, index) => {
             return (

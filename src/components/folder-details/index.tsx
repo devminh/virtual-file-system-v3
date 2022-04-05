@@ -21,11 +21,11 @@ import { API_URL_FILE_STORAGE } from "../../constants/endpoint";
 
 const FolderDetails = ({
   folderDetailData,
-  setCreateNewItem,
   parent,
   setParent,
   moveItem,
   setMoveItem,
+  setCreateNewItem,
   setTriggerReload,
 }: FolderDetailsProps): JSX.Element => {
   const [isShowContextMenu, setIsShowContextMenu] = useState<boolean>(false);
@@ -54,19 +54,25 @@ const FolderDetails = ({
   }>({ fileId: "", fileName: "", data: "" });
 
   const handlePasteItem = () => {
-    axios
-      .put(API_URL_FILE_STORAGE, {
-        id: Number(moveItem.id),
-        parent_id: parent.parentId,
-      })
-      .then((res) => {
-        console.log("res", res);
-        if (res.data) {
-          setTriggerReload();
-          setMoveItem({ id: "", name: "", parentId: "" });
-          toast(toast.types.success, `Paste item successfully`);
-        }
-      });
+    if (folderDetailData.find((item) => item.name === moveItem.name)) {
+      toast(
+        toast.types.failure,
+        `This name has appeared in this "${parent.parentName}" folder`
+      );
+    } else {
+      axios
+        .put(API_URL_FILE_STORAGE, {
+          id: Number(moveItem.id),
+          parent_id: parent.parentId,
+        })
+        .then((res) => {
+          if (res.data.statusCode === 200) {
+            setTriggerReload();
+            setMoveItem({ id: "", name: "", parentId: "" });
+            toast(toast.types.success, `Paste item successfully`);
+          }
+        });
+    }
   };
 
   useEffect(() => {
@@ -101,10 +107,10 @@ const FolderDetails = ({
         data: data,
       })
       .then((res) => {
-        if (res.data) {
+        if (res.data.statusCode === 200) {
           setTriggerReload();
+          toast(toast.types.success, `Update item successfully`);
         }
-        console.log("res", res);
       });
   };
 
@@ -155,7 +161,7 @@ const FolderDetails = ({
                   if (tempFolderDetail.find((item) => item.name === name)) {
                     toast(
                       toast.types.failure,
-                      `This name has appeared in this parent folder`
+                      `This name has appeared in this "${parent.parentName}" folder`
                     );
                   } else {
                     handleUpdated(r.id, name, r.type);
@@ -216,7 +222,7 @@ const FolderDetails = ({
 
   return (
     <div
-      className="relative p-4 border-t border-gray-300"
+      className="relative p-4"
       onContextMenu={(e) => {
         e.preventDefault();
         setIsShowContextMenu(true);
@@ -224,7 +230,7 @@ const FolderDetails = ({
       }}
       onClick={() => setIsShowContextMenu(false)}
     >
-      <div className="p-4">
+      <div className="p-4 overflow-auto">
         <Table
           fill
           columns={columns}
@@ -259,7 +265,7 @@ const FolderDetails = ({
             if (folderDetailData.find((item) => item.name === itemName)) {
               toast(
                 toast.types.failure,
-                `This name has appeared in this parent folder`
+                `This name has appeared in this "${parent.parentName}" folder`
               );
             } else {
               setCreateNewItem(createNewItemType, itemName, dataItem);
@@ -283,7 +289,7 @@ const FolderDetails = ({
             if (folderDetailData.find((item) => item.name === itemName)) {
               toast(
                 toast.types.failure,
-                `This name has appeared in this parent folder`
+                `This name has appeared in this "${parent.parentName}" folder`
               );
             } else {
               handleUpdated(fileShowing.fileId, itemName, "file", dataItem);

@@ -8,7 +8,9 @@ const ShowTextFile = ({
   setVisible,
   submitItem,
 }: ShowTextFileProps): JSX.Element => {
-  const [textFileName, setTextFileName] = useState<string>(fileName);
+  const [textFileName, setTextFileName] = useState<string>(
+    fileName.replace(".txt", "")
+  );
   const [textData, setTextData] = useState<string>(data);
 
   return (

@@ -8,7 +8,7 @@ import { useTheme } from "next-themes";
 import { Button, Pane, ProgressCircle, toast } from "@moai/core";
 import { MdDarkMode, MdOutlineLightMode } from "react-icons/md";
 import { GoTerminal } from "react-icons/go";
-import { RiClipboardLine } from "react-icons/ri";
+import { RiClipboardLine, RiFileSearchLine } from "react-icons/ri";
 import FolderDetails from "../components/folder-details";
 import {
   ClipboardItemType,
@@ -126,67 +126,77 @@ const Home: NextPage = () => {
             children=""
           />
         </div>
-      </div>
-      <div className="float-right cursor-pointer">
-        <Button
-          icon={RiClipboardLine}
-          onClick={() => setIsOpenClipboard(!isOpenClipboard)}
+        <div
+          className="flex flex-col items-center cursor-pointer"
+          style={{ marginLeft: "auto" }}
         >
-          Clipboard
-        </Button>
-        {isOpenClipboard && (
-          <div className="pt-2" style={{ maxWidth: "200px" }}>
-            <Pane>
-              {clipBoardItem.id ? (
-                <div>
-                  {clipBoardItem.type} &quot;{clipBoardItem.name}&quot; in
-                  clipboard
-                </div>
-              ) : (
-                "Clipboard is empty"
-              )}
-            </Pane>
+          <Button
+            icon={RiClipboardLine}
+            onClick={() => setIsOpenClipboard(!isOpenClipboard)}
+          >
+            Clipboard
+          </Button>
+          {isOpenClipboard && (
+            <div className="pt-2" style={{ maxWidth: "200px" }}>
+              <Pane>
+                {clipBoardItem.id ? (
+                  <div>
+                    {clipBoardItem.type} &quot;{clipBoardItem.name}&quot; in
+                    clipboard
+                  </div>
+                ) : (
+                  "Clipboard is empty"
+                )}
+              </Pane>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="relative mt-2 border border-gray-300">
+        <div className="flex items-center p-2 space-x-2 text-xl">
+          <RiFileSearchLine />
+          <div>File explorer</div>
+        </div>
+
+        <div className="flex p-2">
+          {currentPath.length
+            ? currentPath.map((item, index) => {
+                return (
+                  <div
+                    className="text-blue-500 cursor-pointer"
+                    key={index}
+                    onClick={() => {
+                      setCurrentParent({
+                        parentId: item.id,
+                        parentName: item.name,
+                      });
+                    }}
+                  >
+                    /{item.name}
+                  </div>
+                );
+              })
+            : "/home"}
+        </div>
+
+        <FolderDetails
+          folderDetailData={folderData || []}
+          setCreateNewItem={handleCreateNewItem}
+          parent={currentParent}
+          setParent={(parentId, parentName) => {
+            setCurrentParent({ parentId: parentId, parentName: parentName });
+          }}
+          moveItem={clipBoardItem}
+          setMoveItem={setClipboardItem}
+          setTriggerReload={mutate}
+        />
+        {isValidating && (
+          <div className="absolute top-0 bottom-0 left-0 right-0 z-10 flex items-center justify-center">
+            <ProgressCircle size={32} value="indeterminate" />
           </div>
         )}
       </div>
-
-      <div className="flex p-2">
-        {currentPath.length
-          ? currentPath.map((item, index) => {
-              return (
-                <div
-                  className="text-blue-500 cursor-pointer"
-                  key={index}
-                  onClick={() => {
-                    setCurrentParent({
-                      parentId: item.id,
-                      parentName: item.name,
-                    });
-                  }}
-                >
-                  /{item.name}
-                </div>
-              );
-            })
-          : "/home"}
-      </div>
-
-      <FolderDetails
-        folderDetailData={folderData || []}
-        setCreateNewItem={handleCreateNewItem}
-        parent={currentParent}
-        setParent={(parentId, parentName) => {
-          setCurrentParent({ parentId: parentId, parentName: parentName });
-        }}
-        moveItem={clipBoardItem}
-        setMoveItem={setClipboardItem}
-        setTriggerReload={mutate}
-      />
-      {isValidating && (
-        <div className="absolute top-0 bottom-0 left-0 right-0 z-10 flex items-center justify-center">
-          <ProgressCircle size={32} value="indeterminate" />
-        </div>
-      )}
 
       {isShowTerminal && (
         <Terminal
