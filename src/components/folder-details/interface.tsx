@@ -27,10 +27,10 @@ export interface ShowTextFileProps {
 
 export interface Folder {
   id: string;
+  parent_id: string;
   name: string;
-  table_name: string;
   type: string;
-  data?: string;
+  data: string;
   created_at: string;
 }
 
