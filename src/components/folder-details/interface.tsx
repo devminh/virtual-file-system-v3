@@ -10,6 +10,8 @@ export interface FolderDetailsProps {
   moveItem: ClipboardItemType;
   setMoveItem: (item: ClipboardItemType) => void;
   setTriggerReload: () => void; //this use to notify useSWR to mutate
+  currentSortType: TableSortType;
+  setCurrentSortType: (currentSortType: TableSortType) => void;
 }
 
 export interface CreateNewFileFormProps {
@@ -50,4 +52,11 @@ export interface ClipboardItemType {
   name: string;
   parentId?: number | string;
   type?: string;
+}
+
+export enum TableSortType {
+  NAME_ASC = "NAME_ASC",
+  NAME_DESC = "NAME_DESC",
+  CREATED_AT_ASC = "CREATED_AT_ASC",
+  CREATED_AT_DESC = "CREATED_AT_DESC",
 }

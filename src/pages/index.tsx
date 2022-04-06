@@ -5,19 +5,25 @@ import axios from "axios";
 import useSWR from "swr";
 
 import { useTheme } from "next-themes";
-import { Button, Pane, ProgressCircle, toast } from "@moai/core";
+import { Button, Pane, ProgressCircle, toast, Tooltip } from "@moai/core";
 import { MdDarkMode, MdOutlineLightMode } from "react-icons/md";
 import { GoTerminal } from "react-icons/go";
-import { RiClipboardLine, RiFileSearchLine } from "react-icons/ri";
+import {
+  RiClipboardLine,
+  RiFileSearchLine,
+  RiInformationLine,
+} from "react-icons/ri";
 import FolderDetails from "../components/folder-details";
 import {
   ClipboardItemType,
   CreateNewItemType,
   Folder,
   PathAddress,
+  TableSortType,
 } from "../components/folder-details/interface";
 import Terminal from "../components/terminal";
 import { API_URL_FILE_STORAGE } from "../constants/endpoint";
+import { fetcherSWR } from "../utils";
 
 const Home: NextPage = () => {
   const { theme, setTheme } = useTheme();
@@ -39,6 +45,10 @@ const Home: NextPage = () => {
     parentId: "",
   });
 
+  const [currentSortType, setCurrentSortType] = useState<TableSortType>(
+    TableSortType.NAME_ASC
+  );
+
   useEffect(() => {
     fetch(`${API_URL_FILE_STORAGE}/?is_root=true`).then(async (res) => {
       const result = await res.json();
@@ -48,20 +58,17 @@ const Home: NextPage = () => {
     });
   }, []);
 
-  const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
   const {
     data: folderData,
     isValidating,
     mutate,
   } = useSWR<Folder[]>(
-    `${API_URL_FILE_STORAGE}/?parent_id=${currentParent.parentId}`,
-    fetcher
+    `${API_URL_FILE_STORAGE}/?parent_id=${currentParent.parentId}&sort_type=${currentSortType}`,
+    fetcherSWR
   ); //this useSWR support real-time fetching
 
   useEffect(() => {
     if (currentParent.parentId) {
-      mutate();
       const existPathIndex = currentPath.findIndex(
         (item) =>
           item.id === currentParent.parentId &&
@@ -76,6 +83,7 @@ const Home: NextPage = () => {
       } else {
         setCurrentPath(currentPath.slice(0, existPathIndex + 1));
       }
+      mutate();
     }
   }, [currentParent]);
 
@@ -153,10 +161,32 @@ const Home: NextPage = () => {
         </div>
       </div>
 
-      <div className="relative mt-2 border border-gray-300">
+      <div className="relative mt-2">
         <div className="flex items-center p-2 space-x-2 text-xl">
           <RiFileSearchLine />
           <div>File explorer</div>
+        </div>
+
+        <div className="float-right text-lg">
+          <Tooltip
+            content={
+              <div>
+                <div>
+                  - Right click inside border gray box to open action menu
+                </div>
+                <div>
+                  - When you move an item, you can check item status in
+                  clipboard button
+                </div>
+              </div>
+            }
+            placement="bottom"
+          >
+            <div className="flex items-center space-x-2">
+              <RiInformationLine />
+              <div>Quick guide</div>
+            </div>
+          </Tooltip>
         </div>
 
         <div className="flex p-2">
@@ -190,6 +220,8 @@ const Home: NextPage = () => {
           moveItem={clipBoardItem}
           setMoveItem={setClipboardItem}
           setTriggerReload={mutate}
+          currentSortType={currentSortType}
+          setCurrentSortType={setCurrentSortType}
         />
         {isValidating && (
           <div className="absolute top-0 bottom-0 left-0 right-0 z-10 flex items-center justify-center">

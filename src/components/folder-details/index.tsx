@@ -9,13 +9,27 @@ import {
   TableColumn,
   toast,
 } from "@moai/core";
-import { CreateNewItemType, FolderDetailsProps, Folder } from "./interface";
+import {
+  CreateNewItemType,
+  FolderDetailsProps,
+  Folder,
+  TableSortType,
+} from "./interface";
 import useMousePosition from "./use-mouse-position";
 
-import { AiOutlineFile, AiOutlineFolder } from "react-icons/ai";
+import {
+  AiOutlineFile,
+  AiOutlineFolder,
+  AiOutlineSortAscending,
+  AiOutlineSortDescending,
+} from "react-icons/ai";
 import CreateNewItemForm from "./create-new-item-form";
 import ShowTextFile from "./show-text-file";
-import { BsThreeDots } from "react-icons/bs";
+import {
+  BsSortNumericDown,
+  BsSortNumericUpAlt,
+  BsThreeDots,
+} from "react-icons/bs";
 import axios from "axios";
 import { API_URL_FILE_STORAGE } from "../../constants/endpoint";
 
@@ -27,6 +41,8 @@ const FolderDetails = ({
   setMoveItem,
   setCreateNewItem,
   setTriggerReload,
+  currentSortType,
+  setCurrentSortType,
 }: FolderDetailsProps): JSX.Element => {
   const [isShowContextMenu, setIsShowContextMenu] = useState<boolean>(false);
   const [currentMousePosition, setCurrentMousePosition] = useState<number>(0);
@@ -172,11 +188,15 @@ const FolderDetails = ({
             {
               label: "Move",
               fn: () => {
-                setMoveItem({
-                  id: r.id,
-                  name: r.name,
-                  parentId: parent.parentId,
-                  type: r.type,
+                Dialog.confirm(
+                  `Are you sure you want to move this ${r.type}?`
+                ).then((confirm: boolean) => {
+                  setMoveItem({
+                    id: r.id,
+                    name: r.name,
+                    parentId: parent.parentId,
+                    type: r.type,
+                  });
                 });
               },
             },
@@ -191,6 +211,7 @@ const FolderDetails = ({
                       .delete(`${API_URL_FILE_STORAGE}/${r.id}`)
                       .then((res) => {
                         if (res.data) {
+                          setTriggerReload();
                           toast(
                             toast.types.success,
                             `Delete ${r.type} successfully`
@@ -222,7 +243,7 @@ const FolderDetails = ({
 
   return (
     <div
-      className="relative p-4"
+      className="relative p-4 border border-gray-300"
       onContextMenu={(e) => {
         e.preventDefault();
         setIsShowContextMenu(true);
@@ -230,6 +251,56 @@ const FolderDetails = ({
       }}
       onClick={() => setIsShowContextMenu(false)}
     >
+      <div className="flex space-x-4">
+        <div
+          className={`flex cursor-pointer items-center p-2 space-x-2 border-2 ${
+            currentSortType === TableSortType.NAME_ASC
+              ? "border-blue-400"
+              : "border-gray-400"
+          }`}
+          onClick={() => setCurrentSortType(TableSortType.NAME_ASC)}
+        >
+          <AiOutlineSortAscending size={30} />
+          <div>Name</div>
+        </div>
+
+        <div
+          className={`flex cursor-pointer items-center p-2 space-x-2 border-2 ${
+            currentSortType === TableSortType.NAME_DESC
+              ? "border-blue-400"
+              : "border-gray-400"
+          }`}
+          onClick={() => setCurrentSortType(TableSortType.NAME_DESC)}
+        >
+          <AiOutlineSortDescending size={30} />
+          <div>Name</div>
+        </div>
+
+        <div
+          className={`flex cursor-pointer items-center p-2 space-x-2 border-2 ${
+            currentSortType === TableSortType.CREATED_AT_ASC
+              ? "border-blue-400"
+              : "border-gray-400"
+          }`}
+          onClick={() => setCurrentSortType(TableSortType.CREATED_AT_ASC)}
+        >
+          <BsSortNumericUpAlt size={30} />
+          <div>Created At</div>
+        </div>
+
+        <div
+          className={`flex cursor-pointer items-center p-2 space-x-2 border-2 ${
+            currentSortType === TableSortType.CREATED_AT_DESC
+              ? "border-blue-400"
+              : "border-gray-400"
+          }`}
+          onClick={() => setCurrentSortType(TableSortType.CREATED_AT_DESC)}
+        >
+          <BsSortNumericDown size={30} />
+          <div>Created At</div>
+        </div>
+      </div>
+
       <div className="p-4 overflow-auto">
         <Table
           fill
