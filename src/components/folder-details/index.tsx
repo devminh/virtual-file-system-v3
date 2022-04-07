@@ -32,6 +32,7 @@ import {
 } from "react-icons/bs";
 import axios from "axios";
 import { API_URL_FILE_STORAGE } from "../../constants/endpoint";
+import { NAME_REGEX } from "../../constants";
 
 const FolderDetails = ({
   folderDetailData,
@@ -137,7 +138,7 @@ const FolderDetails = ({
         className: "text-center whitespace-nowrap",
         render: (r) => (
           <div
-            className="flex items-center cursor-pointer"
+            className="flex items-center text-blue-600 cursor-pointer"
             onClick={() => {
               if (r.type === "file") {
                 setFileShowing({
@@ -173,7 +174,8 @@ const FolderDetails = ({
                   (item) => item.id !== r.id
                 );
                 const name = (await Dialog.prompt("Rename")) || "";
-                if (name) {
+
+                if (NAME_REGEX.test(name)) {
                   if (tempFolderDetail.find((item) => item.name === name)) {
                     toast(
                       toast.types.failure,
@@ -182,6 +184,11 @@ const FolderDetails = ({
                   } else {
                     handleUpdated(r.id, name, r.type);
                   }
+                } else {
+                  toast(
+                    toast.types.failure,
+                    "Invalid name format. Please try again"
+                  );
                 }
               },
             },
@@ -251,11 +258,12 @@ const FolderDetails = ({
       }}
       onClick={() => setIsShowContextMenu(false)}
     >
-      <div className="flex space-x-4">
+      <div className="flex flex-wrap items-center space-x-4 space-y-2">
+        <div className="font-bold">Order by</div>
         <div
           className={`flex cursor-pointer items-center p-2 space-x-2 border-2 ${
             currentSortType === TableSortType.NAME_ASC
-              ? "border-blue-400"
+              ? "border-blue-500"
               : "border-gray-400"
           }`}
           onClick={() => setCurrentSortType(TableSortType.NAME_ASC)}
@@ -267,7 +275,7 @@ const FolderDetails = ({
         <div
           className={`flex cursor-pointer items-center p-2 space-x-2 border-2 ${
             currentSortType === TableSortType.NAME_DESC
-              ? "border-blue-400"
+              ? "border-blue-500"
               : "border-gray-400"
           }`}
           onClick={() => setCurrentSortType(TableSortType.NAME_DESC)}
@@ -279,8 +287,8 @@ const FolderDetails = ({
         <div
           className={`flex cursor-pointer items-center p-2 space-x-2 border-2 ${
             currentSortType === TableSortType.CREATED_AT_ASC
-              ? "border-blue-400"
-              : "border-gray-400"
+              ? "border-blue-500"
+              : "border-gray-500"
           }`}
           onClick={() => setCurrentSortType(TableSortType.CREATED_AT_ASC)}
         >

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Dialog, Input, Tag, TextArea, toast } from "@moai/core";
 import { CreateNewFileFormProps, CreateNewItemType } from "./interface";
+import { NAME_REGEX } from "../../constants";
 const CreateNewItemForm = ({
   setVisible,
   submitItem,
@@ -11,7 +12,7 @@ const CreateNewItemForm = ({
 
   return (
     <Dialog onEsc={() => setVisible(false)}>
-      <div className="space-y-4 p-4">
+      <div className="p-4 space-y-4">
         <div className="text-lg">Create a new {itemType}</div>
 
         <div>{itemType} name: </div>
@@ -34,13 +35,12 @@ const CreateNewItemForm = ({
             highlight
             type="button"
             onClick={() => {
-              const regex = /^[a-zA-Z0-9_-]+$/;
-              if (regex.test(fileName)) {
+              if (NAME_REGEX.test(fileName)) {
                 submitItem(fileName, data);
               } else {
                 toast(
                   toast.types.failure,
-                  "Invalid file type. Please try again"
+                  "Invalid name format. Please try again"
                 );
               }
             }}

@@ -25,7 +25,7 @@ const getChildrenItem = async (
 };
 
 //this function use to check and get last valid file/folder
-export const getValidFolderPath = async (
+export const getValidItemPath = async (
   currentId: string,
   path: string,
   pathType: PathType
@@ -99,21 +99,44 @@ export const getValidCurrentFolderPath = async (
       }
       index += 1;
     }
-  } else {
-    // const result = await axios.get(`${API_URL_FILE_STORAGE}/?parent_id=${currentId}&type=${pathType}`)
   }
 
   return folderPaths;
 };
 
-// let count = 0;
-// let path = "../../";
+//this function use to check and get all valid folder
+export const getAllPosiblePath = async (
+  currentId: string,
+  path: string,
+  pathType: PathType
+) => {
+  if (path[0] === "/") {
+    path = path.slice(1);
+  }
+  const folders = path.split("/");
 
-// while (path.length > 0) {
-//   if (path.indexOf("../") === 0) {
-//     path = path.slice(path.indexOf("../"), path.lastIndexOf("../"));
-//     count++;
-//   } else {
-//     break;
-//   }
-// }
+  let folderPaths: PathAddress[] = [];
+
+  if (folders.length) {
+    let parentId = "";
+
+    let index = 0;
+    while (index < folders.length) {
+      let fetch = await getChildrenItem(
+        parentId || currentId,
+        folders[index],
+        pathType
+      );
+      if (fetch) {
+        parentId = fetch.id;
+        folderPaths.push({ id: fetch.id, name: fetch.name });
+      } else {
+        folderPaths.push({ id: "", name: folders[index] });
+        break;
+      }
+      index += 1;
+    }
+  }
+
+  return folderPaths;
+};

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Dialog, Input, Tag, TextArea, toast } from "@moai/core";
 import { ShowTextFileProps } from "./interface";
+import { NAME_REGEX } from "../../constants";
 
 const ShowTextFile = ({
   fileName,
@@ -29,13 +30,12 @@ const ShowTextFile = ({
             highlight
             type="button"
             onClick={() => {
-              const regex = /^[a-zA-Z0-9_-]+$/;
-              if (regex.test(textFileName)) {
+              if (NAME_REGEX.test(textFileName)) {
                 submitItem(textFileName, textData);
               } else {
                 toast(
                   toast.types.failure,
-                  "Invalid file type. Please try again"
+                  "Invalid name format. Please try again"
                 );
               }
             }}
