@@ -93,6 +93,7 @@ const Terminal = ({ rootFolder }: TerminalPageProps): JSX.Element => {
             case undefined:
               break;
             default:
+              let tempPath: PathAddress[] = currentPath;
               let parentId = currentParent.id;
               let tempCommand = commandParams[1];
 
@@ -106,27 +107,28 @@ const Terminal = ({ rootFolder }: TerminalPageProps): JSX.Element => {
                 for (let i = 0; i < parentPath?.length; i++) {
                   j--;
                 }
-                setCurrentPath(currentPath.slice(0, j + 1));
-                parentId = currentPath[j].id;
+                if (j >= 0) {
+                  parentId = currentPath[j].id;
+                  tempPath = [...currentPath.slice(0, j + 1)];
+                  parentId = currentPath[j].id;
+                } else {
+                  parentId = "";
+                }
               }
               //detect parent path as ../../
-              console.log("parentId", parentId);
-              console.log("tempCommand", tempCommand);
 
               setTimeout(() => {
-                if (!tempCommand) {
+                if (!tempCommand && parentId) {
                   setCurrentParent(currentPath[j]);
-                } else {
+                  setCurrentPath(tempPath);
+                } else if (parentId) {
                   getValidCurrentFolderPath(
                     parentId,
                     tempCommand,
                     PathType.FOLDER_PATH
                   ).then((res) => {
                     if (res.length) {
-                      console.log("ress", res);
-                      console.log("currentPath", currentPath);
-
-                      setCurrentPath([...currentPath, ...res]);
+                      setCurrentPath([...tempPath, ...res]);
 
                       setCurrentParent({
                         id: res[res.length - 1].id,
@@ -139,6 +141,11 @@ const Terminal = ({ rootFolder }: TerminalPageProps): JSX.Element => {
                       ]);
                     }
                   });
+                } else {
+                  setCommandResult([
+                    ...commandResult,
+                    `Wrong path. Please try again`,
+                  ]);
                 }
               }, 500);
 
@@ -999,8 +1006,8 @@ const Terminal = ({ rootFolder }: TerminalPageProps): JSX.Element => {
         </div>
 
         <div>
-          - This terminal currently does not allow to have spaced
-          characters, sorry for that inconvenience.
+          - This terminal currently does not allow to have spaced characters,
+          sorry for that inconvenience.
         </div>
 
         <div>
